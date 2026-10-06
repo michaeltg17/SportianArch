@@ -1,0 +1,159 @@
+/* Host platform styles — deliberately loud so you can SEE that the embedded
+   SCS (inside its Shadow DOM) is not affected by any of this. */
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #f5efe6;
+  color: #2b2118;
+}
+
+.host-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.host-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 3px double #2b2118;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.host-header h1 {
+  margin: 0 0 4px;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+}
+
+.host-subtitle {
+  margin: 0;
+  font-style: italic;
+  color: #6b5d4f;
+}
+
+.host-user-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.host-user-switch select {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid #2b2118;
+  border-radius: 4px;
+  background: #fffdf9;
+}
+
+.host-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.host-panel {
+  background: #fffdf9;
+  border: 1px solid #d8cbb8;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 4px 4px 0 rgba(43, 33, 24, 0.08);
+}
+
+.host-panel-title {
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #6b5d4f;
+  margin-bottom: 12px;
+}
+
+.host-status {
+  color: #6b5d4f;
+  font-style: italic;
+}
+
+.host-error {
+  color: #a1331f;
+}
+
+.host-meta {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #6b5d4f;
+}
+
+.host-meta code {
+  font-family: 'Courier New', monospace;
+  background: #f0e9dc;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.host-console {
+  min-height: 300px;
+}
+
+.host-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.host-log-entry {
+  border: 1px solid #e5dac9;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: #faf6ee;
+}
+
+.host-log-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.host-log-head code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #1f5c3d;
+}
+
+.host-log-head time {
+  font-size: 11px;
+  color: #8a7a68;
+}
+
+.host-log-entry pre {
+  margin: 6px 0 0;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .host-columns {
+    grid-template-columns: 1fr;
+  }
+}

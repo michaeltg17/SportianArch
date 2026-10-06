@@ -1,0 +1,89 @@
+name: frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/host/**"
+      - "apps/scs-web/**"
+      - "packages/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.base.json"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    paths:
+      - "apps/host/**"
+      - "apps/scs-web/**"
+      - "packages/**"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Workspace install: single lockfile, all workspaces linked.
+      - run: npm ci
+
+      # Typecheck + build every frontend workspace (shared -> scs-web -> host).
+      - run: npm run typecheck
+      - run: npm run build -w @scs/shared
+      - run: npm run build -w @scs/web
+      - run: npm run build -w @scs/host
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # scs-web: self-contained web component bundle.
+      - uses: docker/metadata-action@v5
+        id: web
+        with:
+          images: ${{ env.IMAGE }}/scs-web
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/scs-web/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.web.outputs.tags }}
+          cache-from: type=gha,scope=scs-web
+          cache-to: type=gha,mode=max,scope=scs-web
+
+      # host: the platform that embeds the SCS.
+      - uses: docker/metadata-action@v5
+        id: host
+        with:
+          images: ${{ env.IMAGE }}/scs-host
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/host/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.host.outputs.tags }}
+          cache-from: type=gha,scope=scs-host
+          cache-to: type=gha,mode=max,scope=scs-host

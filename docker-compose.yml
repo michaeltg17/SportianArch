@@ -1,0 +1,110 @@
+name: sportian-scs
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: scs-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - scs-pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: scs-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management UI (guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  scs-todos-api:
+    build:
+      context: ./apps/scs-todos-api
+      dockerfile: Dockerfile
+    container_name: scs-todos-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8081
+      ConnectionStrings__TodosDb: "Host=postgres;Port=5432;Username=postgres;Password=postgres;Database=scs_todos"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672/"
+      SCS__JwtSecret: "${SCS_JWT_SECRET:-scs-demo-shared-secret-0123456789-0123456789}"
+      SCS__AllowedOrigins: "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080"
+    ports:
+      - "8081:8081"
+
+  scs-notifications-api:
+    build:
+      context: ./apps/scs-notifications-api
+      dockerfile: Dockerfile
+    container_name: scs-notifications-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8082
+      ConnectionStrings__NotificationsDb: "Host=postgres;Port=5432;Username=postgres;Password=postgres;Database=scs_notifications"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672/"
+      SCS__JwtSecret: "${SCS_JWT_SECRET:-scs-demo-shared-secret-0123456789-0123456789}"
+      SCS__AllowedOrigins: "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080"
+    ports:
+      - "8082:8082"
+
+  scs-bff:
+    build:
+      context: ./apps/scs-bff
+      dockerfile: Dockerfile
+    container_name: scs-bff
+    depends_on:
+      - scs-todos-api
+      - scs-notifications-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8083
+      SCS__TodosApiUrl: "http://scs-todos-api:8081"
+      SCS__NotificationsApiUrl: "http://scs-notifications-api:8082"
+      SCS__JwtSecret: "${SCS_JWT_SECRET:-scs-demo-shared-secret-0123456789-0123456789}"
+      SCS__AllowedOrigins: "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080"
+    ports:
+      - "8083:8083"
+
+  scs-web:
+    build:
+      context: .
+      dockerfile: apps/scs-web/Dockerfile
+    container_name: scs-web
+    ports:
+      - "5174:5174"
+
+  host:
+    build:
+      context: .
+      dockerfile: apps/host/Dockerfile
+    container_name: scs-host
+    depends_on:
+      - scs-web
+    ports:
+      - "8080:8080"
+
+volumes:
+  scs-pgdata:

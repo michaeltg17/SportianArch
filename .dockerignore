@@ -1,0 +1,17 @@
+# VCS
+.git
+.gitignore
+
+# Node
+**/node_modules
+package-lock.json.bak
+
+# Build outputs (rebuilt in-container)
+**/dist
+**/bin
+**/obj
+**/*.user
+
+# Local env / secrets
+.env
+*.env.local

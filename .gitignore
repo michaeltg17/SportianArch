@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.turbo/
+*.tsbuildinfo
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+.idea/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local dev runtime state
+scripts/.api-pids.json

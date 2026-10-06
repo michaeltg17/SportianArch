@@ -1,0 +1,24 @@
+{
+  "name": "sportian-arch",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@11.13.0",
+  "description": "Self-Contained Systems (SCS) demo: embeddable Todo vertical with .NET minimal APIs, RabbitMQ, Postgres and a React web component",
+  "workspaces": [
+    "packages/*",
+    "apps/host",
+    "apps/scs-web"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "typecheck": "turbo run typecheck"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.7",
+    "typescript": "^7.0.2"
+  }
+}
