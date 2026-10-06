@@ -42,7 +42,7 @@ jobs:
         run: dotnet build e2e/SportianArch.E2E.csproj -c Release
 
       - name: Install Playwright browsers
-        run: pwsh ./e2e/bin/Release/net10.0/Playwright.ps1 install --with-deps chromium
+        run: pwsh ./e2e/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run e2e tests
         run: dotnet test e2e/SportianArch.E2E.csproj -c Release --no-build --logger "console;verbosity=normal"
